@@ -1,16 +1,16 @@
 # Cubos Movies – Fullstack Challenge
 
-Aplicação completa (frontend + backend) para gerenciamento de filmes com autenticação, filtros avançados, envio de lembretes e suporte a deploy containerizado.
+Eu desenvolvi uma aplicação completa (frontend + backend) para gerenciamento de filmes com autenticação, filtros avançados, envio de lembretes e suporte a deploy containerizado.
 
 ## Visão Geral
 
-- **Frontend**: Next.js 16 (App Router, Server Components/Actions) totalmente tipado em TypeScript, responsivo conforme o Figma original e com alternância claro/escuro baseada no Radix Colors.
-- **Backend**: Fastify + Prisma + PostgreSQL em TypeScript, com autenticação JWT, filtros paginados, upload para Google Cloud Storage (via URL pré-assinada) e agendamento de e-mails usando Resend.
-- **Infra**: Dockerfiles separados para frontend e backend + `docker-compose.yml` que orquestra PostgreSQL e ambos os serviços.
+- Frontend: usei Next.js 16 (App Router, Server Components/Actions) com TypeScript. A interface é responsiva conforme o Figma e tem alternância claro/escuro baseada no Radix Colors.
+- Backend: implementei Fastify + Prisma + PostgreSQL, com autenticação via JWT, filtros paginados, upload de imagens para Google Cloud Storage (URL pré‑assinada) e agendamento de e‑mails de lembrete (Resend).
+- Infra: criei Dockerfiles separados para frontend e backend e um `docker-compose.yml` que orquestra PostgreSQL e os dois serviços.
 
 ## Atenção Avaliadores (SEEDS)
 
-- Há um script de seed em `backend/prisma/seed.ts` que:
+- Eu incluí um script de seed em `backend/prisma/seed.ts` que:
   - Cria um usuário de demonstração: email `cubos@cubos.com` e senha `Cubos123@`.
   - Insere filmes com pôster/backdrop válidos.
   - Faz upload das imagens para o Google Cloud Storage (GCS).
@@ -18,7 +18,7 @@ Aplicação completa (frontend + backend) para gerenciamento de filmes com auten
   - Local: `cd backend && npx prisma migrate deploy && npm run seed`
   - Docker: `docker compose exec backend npx prisma migrate deploy && docker compose exec backend npm run seed`
 
-## Funcionalidades Implementadas
+## O que eu implementei
 
 - Cadastro/login com hashing de senha (bcrypt) e token JWT (armazenado em cookie HTTP-only no frontend).
 - CRUD de filmes com controle de permissão: apenas o autor consegue ver, editar ou excluir seus filmes.
@@ -26,15 +26,40 @@ Aplicação completa (frontend + backend) para gerenciamento de filmes com auten
 - Detalhes completos por filme, incluindo título original, orçamento, receita e imagem.
 - Criação/edição com suporte a datas futuras. Quando a data for futura, o backend agenda o envio de e-mail de lembrete na data de estreia (job horário usando `node-cron` + Resend).
 - Endpoint `POST /storage/presign` que gera URL pré-assinada no Google Cloud Storage para upload direto (pensado para evoluir o formulário com upload real de poster).
-- Tema claro/escuro com `next-themes`, header fixo com logout e UX responsiva para 1366px, 414px e intermediários.
+-- Tema claro/escuro com `next-themes`, header com logout e UX responsiva em 1366px, 414px e intermediários.
 
-## Decisões de Arquitetura (por que estas tecnologias?)
+## Por que esta stack
 
-- **Next.js 16 (App Router)**: ótimo DX com TypeScript, Server Components/Actions para melhor performance, roteamento e SSR/SSG nativos e integração simples de temas e acessibilidade.
-- **Fastify (em vez de Express)**: performance superior, plugins first-class (JWT, CORS, Multipart, Swagger), validação baseada em schema com AJV e excelente suporte a TypeScript.
-- **Prisma + PostgreSQL**: produtividade com tipagem end-to-end, migrações consistentes e bom encaixe com filtros/relacionamentos exigidos pelo domínio.
-- **Docker + docker-compose**: reprodutibilidade do ambiente, isolamento de dependências (PostgreSQL), facilidade para rodar localmente e em CI/CD.
-- **Google Cloud Storage**: armazenamento de imagens com URLs públicas ou via proxy, suporte a Signed URLs e boa documentação. Mantivemos um “modo proxy” no backend para funcionar mesmo com bucket privado.
+- Next.js 16 (App Router): SSR/SSG, Server Components/Actions e um DX excelente com TypeScript, o que simplifica dados no servidor e acessibilidade/tema.
+- Fastify: melhor performance que Express, ecossistema de plugins (JWT, CORS, Multipart, Swagger) e validação por schemas com AJV.
+- Prisma + PostgreSQL: produtividade com tipagem forte, migrações seguras e consultas flexíveis para filtros.
+- Docker + Compose: ambiente reprodutível e simples de subir localmente e em CI/CD.
+- Google Cloud Storage: storage de imagens com Signed URLs e opção de público/privado. Eu mantive um proxy quando privado.
+
+## Estrutura do Projeto
+
+- Frontend (`frontend/src`)
+  - `app/(auth)/login` e `app/(auth)/register`: telas públicas de autenticação.
+  - `app/(protected)/movies`: listagem, paginação, filtros e páginas de criação/edição/detalhes (acesso protegido).
+  - `app/api/proxy/[...path]`: proxy interno do Next para o backend (encaminha cookies/headers).
+  - `components/ThemeToggle`, `theme-provider`: alternância de tema.
+  - `components/movies/*`: cartões, cabeçalho, lista paginada, formulários e detalhes.
+  - `components/ui/*`: botões, inputs, selects, modal, sidebar, upload de imagem, rating circular e toast.
+  - `hooks/useQueryFilters`: leitura/escrita de filtros na URL.
+  - `lib/filters.ts` e `lib/utils.ts`: utilitários de filtros e helpers.
+  - `lib/imageProxy.ts`: decide entre proxy do backend ou URL direta do GCS (bucket público).
+  - `services/*`: chamadas ao backend (auth, movies, storage).
+  - Testes: `ThemeToggle.test.tsx`, `filters.test.ts`, `utils.test.ts`, `MovieCard.test.tsx` (Vitest + Testing Library).
+
+- Backend (`backend/src`)
+  - `modules/auth`: controllers, dtos, repository e use cases de login/registro.
+  - `modules/movies`: controllers, dtos, repository, use cases e utils (parsers/mapper).
+  - `modules/storage`: presign de upload e integração com GCS.
+  - `modules/genres`: extração de gêneros a partir dos filmes do usuário.
+  - `services/emailService` e `services/reminderService`: envio de e‑mail e scheduler.
+  - `lib/httpResponse`: respostas padronizadas e `AppError`.
+  - `env.ts`: validação das variáveis de ambiente (sem detalhar aqui).
+  - Prisma: `prisma/schema.prisma`, `prisma/migrations/*` e `prisma/seed.ts`.
 
 ## Padrões de Projeto e Organização
 
@@ -50,7 +75,7 @@ Essa estrutura facilita manutenção, testes, evolução e leitura do código.
 
 ## Arquitetura do Backend
 
-- **Fastify 4** com plugins JWT e CORS (origens múltiplas via `FRONTEND_URL`).
+- **Fastify 4** com plugins JWT e CORS (CORS configurado para o frontend).
 - **Prisma/PostgreSQL**: modelos `User` e `Movie` (com array de gêneros, datas e campos financeiros). Migração inicial em `backend/prisma/migrations/0001_init/`.
 - **Serviços**:
   - `ReminderService`: job horário (`node-cron`) que consulta filmes com lançamento no dia e dispara e-mails via Resend, marcando `reminderSent` para evitar duplicidade.
@@ -60,11 +85,11 @@ Essa estrutura facilita manutenção, testes, evolução e leitura do código.
 
 ### Swagger
 
-- Documentação automática disponível em `GET /docs` quando o backend está rodando.
+- Eu exponho a documentação em `GET /docs` quando o backend está rodando.
 
-## Como Rodar Localmente (sem Docker)
+## Como eu rodo localmente (sem Docker)
 
-1. Banco de dados: tenha um PostgreSQL local rodando e atualize `DATABASE_URL` no backend.
+1. Banco de dados: execute um PostgreSQL local e aponte o backend para ele.
 2. Backend:
    ```bash
    cd backend
@@ -78,9 +103,9 @@ Essa estrutura facilita manutenção, testes, evolução e leitura do código.
    npm install
    npm run dev
    ```
-4. Acesse `http://localhost:3000`. O frontend chama o backend via `BACKEND_URL` e usa cookies HTTP-only para persistir o token.
+4. Acesse `http://localhost:3000`. O frontend se comunica com o backend via proxy interno (`/api/proxy`) e usa cookies HTTP‑only.
 
-## Executando com Docker
+## Como eu rodo com Docker
 
 1. Na raiz do projeto:
    ```bash
@@ -96,7 +121,7 @@ Essa estrutura facilita manutenção, testes, evolução e leitura do código.
    docker compose exec backend npm run seed
    ```
 
-## Rotas Principais do Backend
+## Rotas principais do backend
 
 - `POST /auth/register` – cria usuário e retorna token.
 - `POST /auth/login` – autentica e retorna token.
@@ -106,19 +131,19 @@ Essa estrutura facilita manutenção, testes, evolução e leitura do código.
 - `POST /storage/presign` – gera upload URL para o bucket configurado no Google Cloud Storage (body: `{ fileName, contentType }`).
 - `GET /genres` – lista de gêneros derivada de filmes existentes (para compor filtros).
 
-## Justificativas e Observações
+## Decisões e observações
 
 - **Permissões**: Conforme o enunciado (“visualizar, editar e excluir filmes devem ser restritas ao usuário que cadastrou”), a listagem retorna apenas os filmes do usuário autenticado, mesmo que o layout sugira “todos os filmes”. Documentado aqui para alinhamento.
 - **Filtro de notas**: O frontend suporta segmentos `vote-gte-X`. O backend aceita valores de 0–10 diretamente ou 0–100 (convertendo para 0–10), mantendo flexibilidade.
 - **Upload em GCS**: Embora o formulário atual peça apenas uma URL de poster, o backend já oferece presign para facilitar a evolução do design (por isso a dependência do Google Cloud Storage).
-- **Lembrete por e-mail**: Optamos pelo Resend pela simplicidade; o scheduler é executado ao subir o servidor e a cada hora. Caso deseje usar Mailhog/Ethereal, basta adaptar `sendMovieReminderEmail`.
+- **Lembrete por e‑mail**: optei pelo Resend pela simplicidade; o scheduler é executado ao subir o servidor e a cada hora. Caso deseje usar Mailhog/Ethereal, basta adaptar `sendMovieReminderEmail`.
 
-## Próximos Passos Sugeridos
+## Testes e qualidade
 
-- Implementar consumo do endpoint de upload pré-assinado diretamente no formulário (com visualização do poster).
-- Adicionar testes automatizados (unitários/E2E) para o backend Fastify.
-- Expandir os filtros (ex.: ordenar por popularidade) e adicionar exclusão no frontend.
-- Implementar middleware no frontend para redirecionar automaticamente usuários autenticados/deslogados conforme requisito original.
+- Frontend: Vitest + Testing Library para componentes e utilitários.
+- Backend: testes de rotas e serviços com Vitest.
+- Tipos e lint: TypeScript em todo o projeto; validação por schema (TypeBox/AJV) e respostas padronizadas.
+
 
 ---
 
