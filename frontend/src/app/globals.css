@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Mauve */
+@import '@radix-ui/colors/mauve-dark.css';
+@import '@radix-ui/colors/mauve-dark-alpha.css';
+@import '@radix-ui/colors/mauve.css';
+@import '@radix-ui/colors/mauve-alpha.css';
+
+/* Purple */
+@import '@radix-ui/colors/purple-dark.css';
+@import '@radix-ui/colors/purple-dark-alpha.css';
+@import '@radix-ui/colors/purple.css';
+@import '@radix-ui/colors/purple-alpha.css';
+
+:root {
+	--background: var(--mauve-1);
+	--foreground: var(--mauve-12);
+
+	--text: var(--mauve-12);
+	--text-muted: var(--mauve-11);
+	--text-inverse: var(--mauve-1);
+
+	--muted: var(--mauve-3);
+	--muted-foreground: var(--mauve-11);
+	--muted-hover: var(--mauve-4);
+
+	--primary: var(--purple-9);
+	--primary-foreground: var(--purple-12);
+	--primary-hover: var(--purple-10);
+
+	--card: var(--mauve-2);
+	--border: var(--mauve-6);
+	--input-hover: var(--mauve-8);
+}
+
+/* Dark theme uses EXACT SAME variable names — but overridden */
+.dark {
+	--background: var(--mauve-1);
+	--foreground: var(--mauve-12);
+
+	--text: var(--mauve-12);
+	--text-muted: var(--mauve-11);
+	--text-inverse: var(--mauve-1);
+
+	--muted: var(--mauve-3);
+	--muted-foreground: var(--mauve-11);
+	--muted-hover: var(--mauve-4);
+
+	--primary: var(--purple-9);
+	--primary-hover: var(--purple-10);
+	--primary-foreground: var(--purple-12);
+
+	--card: #232225;
+	--border: var(--mauve-6);
+	--input-hover: var(--mauve-8);
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-text: var(--text);
+	--color-text-muted: var(--text-muted);
+	--color-text-inverse: var(--text-inverse);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-card: var(--card);
+	--color-border: var(--border);
+	--font-sans: var(--font-roboto);
+	--font-inter: var(--font-inter);
+}
+
+html.dark {
+	color-scheme: dark;
+}
+html:not(.dark) {
+	color-scheme: light;
+}
+
+body {
+	font-family: var(--font-roboto), sans-serif;
+}
+
+.input-base {
+	@apply w-full rounded-md border px-3 py-2 outline-none transition-all;
+}
+
+.input-base:focus {
+	border-color: var(--primary); /* purple9 */
+	box-shadow: 0 0 0 1px var(--primary);
+}
+.input-base:hover:not(:focus) {
+	border-color: var(--input-hover);
+}
+
+.container {
+	@apply mx-auto w-full max-w-7xl px-4 md:px-6;
+}
+.card {
+	background: var(--card);
+	@apply rounded-[4px]
+}
+
+[data-sonner-toast][data-type='success'] {
+	background: rgb(22 163 74 / 0.9) !important;
+	color: white !important;
+	border-color: rgb(34 197 94) !important;
+}
+
+[data-sonner-toast][data-type='error'] {
+	background: rgb(220 38 38 / 0.9) !important;
+	color: white !important;
+	border-color: rgb(239 68 68) !important;
+}
+
+[data-sonner-toast][data-type='warning'] {
+	background: rgb(234 179 8 / 0.9) !important;
+	color: white !important;
+	border-color: rgb(250 204 21) !important;
+}
+
+[data-sonner-toast][data-type='info'] {
+	background: rgb(37 99 235 / 0.9) !important;
+	color: white !important;
+	border-color: rgb(59 130 246) !important;
+}

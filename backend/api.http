@@ -1,0 +1,125 @@
+### Variáveis
+@baseUrl = http://localhost:3333
+@token = seu-token-jwt-aqui
+
+### Health Check
+GET {{baseUrl}}/health
+
+### ============================================
+### AUTH - Autenticação
+### ============================================
+
+### Registrar novo usuário
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+
+### ============================================
+### MOVIES - Filmes (Requer autenticação)
+### ============================================
+
+### Listar filmes (com paginação)
+GET {{baseUrl}}/movies?page=1&perPage=10
+Authorization: Bearer {{token}}
+
+### Listar filmes com busca
+GET {{baseUrl}}/movies?search=avengers&page=1&perPage=10
+Authorization: Bearer {{token}}
+
+### Listar filmes com filtros
+# Filtros: genre:Action,releaseDate:2024,runtime:120
+GET {{baseUrl}}/movies?filters=genre:Action,releaseDate:2024&page=1&perPage=10
+Authorization: Bearer {{token}}
+
+### Buscar filme por ID
+GET {{baseUrl}}/movies/{{movieId}}
+Authorization: Bearer {{token}}
+
+### Criar novo filme
+POST {{baseUrl}}/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Avengers: Endgame",
+  "originalTitle": "Avengers: Endgame",
+  "overview": "Após Thanos eliminar metade das criaturas vivas, os Vingadores se reúnem para desfazer suas ações.",
+  "releaseDate": "2019-04-26",
+  "runtime": 181,
+  "genres": ["Action", "Adventure", "Drama"],
+  "posterUrl": "https://example.com/poster.jpg",
+  "backdropUrl": "https://example.com/backdrop.jpg",
+  "voteAverage": 8.4,
+  "budget": 356000000,
+  "revenue": 2797800564
+}
+
+### Criar filme (mínimo)
+POST {{baseUrl}}/movies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Filme Teste"
+}
+
+### Atualizar filme
+PUT {{baseUrl}}/movies/{{movieId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Avengers: Endgame (Atualizado)",
+  "voteAverage": 8.5,
+  "runtime": 182
+}
+
+### Deletar filme
+DELETE {{baseUrl}}/movies/{{movieId}}
+Authorization: Bearer {{token}}
+
+### ============================================
+### STORAGE - Armazenamento (Requer autenticação)
+### ============================================
+
+### Gerar URL pré-assinada para upload
+POST {{baseUrl}}/storage/presign
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fileName": "poster.jpg",
+  "contentType": "image/jpeg"
+}
+
+### Upload para Google Cloud Storage (usar a uploadUrl retornada)
+# PUT {{uploadUrl}}
+# Content-Type: image/jpeg
+#
+# < ./path/to/image.jpg
+
+### ============================================
+### DOCS - Documentação
+### ============================================
+
+### Swagger UI
+GET {{baseUrl}}/docs
+
+### Swagger JSON
+GET {{baseUrl}}/docs/json
+
