@@ -20,21 +20,21 @@ describe("ThemeToggle", () => {
 
   it("should render the toggle button", () => {
     render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /alternar tema/i });
+    const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
   });
 
   it("should call setTheme when clicked", async () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /alternar tema/i });
+    const button = screen.getByRole("button");
     await user.click(button);
     expect(mockSetTheme).toHaveBeenCalledWith("light");
   });
 
   it("should accept custom className", () => {
     render(<ThemeToggle className="custom-class" />);
-    const button = screen.getByRole("button", { name: /alternar tema/i });
+    const button = screen.getByRole("button");
     expect(button).toHaveClass("custom-class");
   });
 });

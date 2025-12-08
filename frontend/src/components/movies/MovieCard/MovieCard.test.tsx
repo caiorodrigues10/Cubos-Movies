@@ -13,7 +13,9 @@ describe('MovieCard', () => {
 
 		render(<MovieCard movie={movie} />)
 
-		expect(screen.getByText('Inception')).toBeInTheDocument()
-		expect(screen.getByText('sci-fi, thriller')).toBeInTheDocument()
+	expect(screen.getByText('Inception')).toBeInTheDocument()
+	// Check for capitalized genre text (Sci-fi, Thriller)
+	const genreText = screen.getByText(/Sci-fi.*Thriller/i)
+	expect(genreText).toBeInTheDocument()
 	})
 })

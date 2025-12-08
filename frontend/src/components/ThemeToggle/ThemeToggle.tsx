@@ -23,6 +23,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 		<Button
 			variant="secondary"
 			onClick={() => setTheme(isDark ? 'light' : 'dark')}
+			className={className}
 		>
 			{mounted && (
 				<Image

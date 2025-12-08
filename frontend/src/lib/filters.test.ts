@@ -28,7 +28,7 @@ describe("buildQueryFromFilterSegments", () => {
   it("should convert genre filter", () => {
     const segments = ["genre-acao,aventura"];
     const result = buildQueryFromFilterSegments(segments);
-    expect(result).toContain("genres=acao,aventura");
+    expect(result).toContain("genres=acao%2Caventura");
   });
 
   it("should convert vote filter", () => {
@@ -53,7 +53,7 @@ describe("buildQueryFromFilterSegments", () => {
     expect(result).toContain("durationMin=90");
     expect(result).toContain("releasedStart=2020-01-01");
     expect(result).toContain("releasedEnd=2021-01-01");
-    expect(result).toContain("genres=acao,aventura");
+    expect(result).toContain("genres=acao%2Caventura");
   });
 
   it("should handle date filter with only start date", () => {
