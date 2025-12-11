@@ -1,81 +1,89 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockGetSignedUrl = vi.fn();
-const mockFile = { getSignedUrl: mockGetSignedUrl };
-const mockBucket = { file: vi.fn(() => mockFile) };
+var mockGetSignedUrl: any
+var mockFile: any
+var mockBucket: any
 
-vi.mock("@google-cloud/storage", () => {
-  return {
-    Storage: vi.fn(() => ({
-      bucket: vi.fn(() => mockBucket),
-    })),
-  };
-});
+vi.mock('@google-cloud/storage', () => {
+	const getSignedUrl = vi.fn()
+	const file = { getSignedUrl, save: vi.fn(), download: vi.fn() }
+	const bucket = { file: vi.fn(() => file) }
 
-vi.mock("../env.js", () => ({
-  env: {
-    GCP_PROJECT_ID: "test-project",
-    GCP_BUCKET_NAME: "test-bucket",
-    GCP_CLIENT_EMAIL: "svc@test-project.iam.gserviceaccount.com",
-    GCP_PRIVATE_KEY: "test-key",
-    GCP_SIGNED_URL_EXPIRATION: 300,
-  },
-}));
+	mockGetSignedUrl = getSignedUrl
+	mockFile = file
+	mockBucket = bucket
 
-import { storageService } from "./storageService.js";
+	class Storage {
+		bucket = vi.fn(() => bucket)
+	}
 
-describe("StorageService", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetSignedUrl.mockResolvedValue([
-      "https://storage.googleapis.com/upload-url",
-    ]);
-  });
+	return { Storage }
+})
 
-  it("should create presigned upload URL", async () => {
-    const result = await storageService.createPresignedUpload({
-      fileName: "poster.jpg",
-      contentType: "image/jpeg",
-      ownerId: "user-123",
-    });
+vi.mock('../env.js', () => ({
+	env: {
+		GCP_PROJECT_ID: 'test-project',
+		GCP_BUCKET_NAME: 'test-bucket',
+		GCP_CLIENT_EMAIL: 'svc@test-project.iam.gserviceaccount.com',
+		GCP_PRIVATE_KEY: 'test-key',
+		GCP_SIGNED_URL_EXPIRATION: 300,
+	},
+}))
 
-    expect(result).toHaveProperty("key");
-    expect(result).toHaveProperty(
-      "uploadUrl",
-      "https://storage.googleapis.com/upload-url"
-    );
-    expect(result).toHaveProperty(
-      "objectUrl",
-      "https://storage.googleapis.com/test-bucket/" + result.key
-    );
-    expect(result.key).toContain("users/user-123/");
-    expect(result.key).toContain(".jpg");
-  });
+import { storageService } from './storageService.js'
 
-  it("should generate unique keys for each upload", async () => {
-    const result1 = await storageService.createPresignedUpload({
-      fileName: "poster1.jpg",
-      contentType: "image/jpeg",
-      ownerId: "user-123",
-    });
+describe('StorageService', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockGetSignedUrl.mockResolvedValue([
+			'https://storage.googleapis.com/upload-url',
+		])
+	})
 
-    const result2 = await storageService.createPresignedUpload({
-      fileName: "poster2.jpg",
-      contentType: "image/jpeg",
-      ownerId: "user-123",
-    });
+	it('should create presigned upload URL', async () => {
+		const result = await storageService.createPresignedUpload({
+			fileName: 'poster.jpg',
+			contentType: 'image/jpeg',
+			ownerId: 'user-123',
+		})
 
-    expect(result1.key).not.toBe(result2.key);
-  });
+		expect(result).toHaveProperty('key')
+		expect(result).toHaveProperty(
+			'uploadUrl',
+			'https://storage.googleapis.com/upload-url',
+		)
+		expect(result).toHaveProperty(
+			'objectUrl',
+			'https://storage.googleapis.com/test-bucket/' + result.key,
+		)
+		expect(result.key).toContain('users/user-123/')
+		expect(result.key).toContain('.jpg')
+	})
 
-  it("should preserve file extension", async () => {
-    const result = await storageService.createPresignedUpload({
-      fileName: "movie.poster.png",
-      contentType: "image/png",
-      ownerId: "user-123",
-    });
+	it('should generate unique keys for each upload', async () => {
+		const result1 = await storageService.createPresignedUpload({
+			fileName: 'poster1.jpg',
+			contentType: 'image/jpeg',
+			ownerId: 'user-123',
+		})
 
-    expect(result.key).toContain(".png");
-  });
-});
+		const result2 = await storageService.createPresignedUpload({
+			fileName: 'poster2.jpg',
+			contentType: 'image/jpeg',
+			ownerId: 'user-123',
+		})
+
+		expect(result1.key).not.toBe(result2.key)
+	})
+
+	it('should preserve file extension', async () => {
+		const result = await storageService.createPresignedUpload({
+			fileName: 'movie.poster.png',
+			contentType: 'image/png',
+			ownerId: 'user-123',
+		})
+
+		expect(result.key).toContain('.png')
+	})
+})
 

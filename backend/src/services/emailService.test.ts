@@ -1,56 +1,56 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { sendMovieReminderEmail } from "./emailService.js";
-import { Resend } from "resend";
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { sendMovieReminderEmail } from './emailService.js'
 
-// Mock do Resend
-vi.mock("resend");
+var sendMock: any
 
-describe("EmailService", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+vi.mock('resend', () => {
+	sendMock = vi.fn()
+	class ResendMock {
+		emails = { send: sendMock }
+	}
+	return { Resend: ResendMock }
+})
 
-  it("should send reminder email with correct format", async () => {
-    const mockSend = vi.fn().mockResolvedValue({ id: "email-id" });
-    vi.mocked(Resend).mockImplementation(() => ({
-      emails: {
-        send: mockSend,
-      },
-    } as any));
+describe('EmailService', () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		process.env.RESEND_FROM_EMAIL = 'noreply@test.com'
+		process.env.RESEND_API_KEY = 'test-key'
+	})
 
-    const releaseDate = new Date("2024-12-25");
-    await sendMovieReminderEmail({
-      to: "user@example.com",
-      movieTitle: "Bumblebee",
-      releaseDate,
-    });
+	it('should send reminder email with correct format', async () => {
+		sendMock.mockResolvedValue({ id: 'email-id' })
 
-    expect(mockSend).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: "user@example.com",
-        subject: expect.stringContaining("Bumblebee"),
-        html: expect.stringContaining("Bumblebee"),
-      })
-    );
-  });
+		const releaseDate = new Date('2024-12-25')
+		await sendMovieReminderEmail({
+			to: 'user@example.com',
+			movieTitle: 'Bumblebee',
+			releaseDate,
+		})
 
-  it("should format release date correctly", async () => {
-    const mockSend = vi.fn().mockResolvedValue({ id: "email-id" });
-    vi.mocked(Resend).mockImplementation(() => ({
-      emails: {
-        send: mockSend,
-      },
-    } as any));
+		expect(sendMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				to: 'user@example.com',
+				// título no subject e no html
+				subject: expect.stringContaining('Bumblebee'),
+				html: expect.stringContaining('Bumblebee'),
+			}),
+		)
+	})
 
-    const releaseDate = new Date("2024-12-25");
-    await sendMovieReminderEmail({
-      to: "user@example.com",
-      movieTitle: "Test Movie",
-      releaseDate,
-    });
+	it('should format release date correctly', async () => {
+		sendMock.mockResolvedValue({ id: 'email-id' })
 
-    const callArgs = mockSend.mock.calls[0][0];
-    expect(callArgs.html).toContain("25/12/2024");
-  });
-});
+		// Usa horário de meio-dia UTC para evitar mudança de dia por fuso local
+		const releaseDate = new Date('2024-12-25T12:00:00Z')
+		await sendMovieReminderEmail({
+			to: 'user@example.com',
+			movieTitle: 'Test Movie',
+			releaseDate,
+		})
+
+		const callArgs = sendMock.mock.calls[0][0]
+		expect(callArgs.html).toContain('25/12/2024')
+	})
+})
 

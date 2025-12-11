@@ -12,7 +12,8 @@
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "test": "vitest"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
