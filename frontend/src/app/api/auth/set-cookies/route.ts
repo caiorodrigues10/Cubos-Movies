@@ -6,17 +6,20 @@ export async function POST(request: Request) {
 	try {
 		const { token, userId } = await request.json();
 		const cookieStore = await cookies();
+		const url = new URL(request.url);
+		const isHttps = url.protocol === "https:";
+		const secure = process.env.COOKIE_SECURE === "true" || isHttps;
 
 		cookieStore.set(env.COOKIE_NAME, token, {
 			httpOnly: true,
 			path: "/",
-			secure: true,
+			secure,
 			sameSite: "lax",
 		});
 		cookieStore.set(env.COOKIE_USER_ID, userId, {
 			httpOnly: true,
 			path: "/",
-			secure: true,
+			secure,
 			sameSite: "lax",
 		});
 
