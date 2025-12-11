@@ -40,7 +40,11 @@ export function Header() {
 				<div className="flex items-center gap-2">
 					<ThemeToggle />
 					{isAuthenticated && (
-						<Link href="/api/auth/logout" className="btn btn-primary">
+						<Link
+							href="/api/auth/logout"
+							prefetch={false}
+							className="btn btn-primary"
+						>
 							<Button>Logout</Button>
 						</Link>
 					)}
