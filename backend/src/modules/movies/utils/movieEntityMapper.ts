@@ -1,29 +1,7 @@
 import type { MovieEntity } from '../dtos/movieDto.js'
+import type { Movie } from '@prisma/client'
 
-type MovieFromDb = {
-	id: string
-	title: string
-	originalTitle: string | null
-	tagline?: string | null
-	overview: string | null
-	releaseDate: Date | null
-	runtime: number | null
-	genres: string[]
-	posterUrl: string | null
-	backdropUrl: string | null
-	trailer?: string | null
-	voteAverage?: number | null
-	voteCount?: number | null
-	budget?: number | null
-	revenue?: number | null
-	reminderSent: boolean
-	ownerId: string
-	createdAt: Date
-	updatedAt: Date
-	deletedAt: Date | null
-}
-
-export function mapMovieToEntity(movie: MovieFromDb): MovieEntity {
+export function mapMovieToEntity(movie: Movie): MovieEntity {
 	return {
 		id: movie.id,
 		title: movie.title,

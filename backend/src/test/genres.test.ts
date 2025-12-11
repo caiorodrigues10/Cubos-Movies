@@ -13,7 +13,7 @@ describe('Genres Routes (auth guard)', () => {
 			throw new AppError('Não autorizado', 401)
 		})
 
-		app.setErrorHandler((error: any, request, reply) => {
+		app.setErrorHandler((error: any, request: any, reply: any) => {
 			if (error?.validation) {
 				return reply.status(400).send(
 					buildErrorResponse({

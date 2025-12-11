@@ -15,7 +15,7 @@ describe('Movies Routes (auth guard)', () => {
 		})
 
 		// Handler de erros para responder com o payload padronizado
-		app.setErrorHandler((error: any, request, reply) => {
+		app.setErrorHandler((error: any, request: any, reply: any) => {
 			if (error?.validation) {
 				return reply.status(400).send(
 					buildErrorResponse({
