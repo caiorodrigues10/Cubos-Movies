@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import type { Movie } from '@/services/movies/types'
@@ -14,6 +15,7 @@ import { EditMovieForm } from '../EditMovieForm/EditMovieForm'
 import { InfoItem } from './InfoItem'
 
 export function MovieDetailsClient({ movie }: { movie: Movie }) {
+	const router = useRouter()
 	const [isEditSidebarOpen, setIsEditSidebarOpen] = useState(false)
 	const { resolvedTheme } = useTheme()
 	const [mounted, setMounted] = useState(false)
@@ -38,9 +40,11 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 		if (!value) return '—'
 		if (value >= 1000000) {
 			const millions = value / 1000000
-			return `$${millions.toLocaleString('en-US', { maximumFractionDigits: 2 })}M`
+			return `$${millions.toLocaleString('pt-BR', {
+				maximumFractionDigits: 2,
+			})}M`
 		}
-		return `$${value.toLocaleString('en-US')}`
+		return `$${value.toLocaleString('pt-BR')}`
 	}
 
 	return (
@@ -54,7 +58,7 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 								backgroundSize: 'cover',
 								backgroundPosition: 'center',
 								backgroundRepeat: 'no-repeat',
-							}
+						  }
 						: undefined
 				}
 			>
@@ -69,11 +73,11 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 				<div className="relative z-10">
 					<div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
 						<div>
-							<h1 className="text-4xl font-bold text-[--color-foreground] mb-1 tracking-tight">
+							<h1 className="text-4xl font-bold text-[--color-foreground] dark:text-white mb-1 tracking-tight">
 								{movie.title}
 							</h1>
 							{movie.originalTitle && (
-								<p className="text-[--color-muted-foreground] text-sm">
+								<p className="text-[--color-muted-foreground] text-sm dark:text-white">
 									Título original: {movie.originalTitle}
 								</p>
 							)}
@@ -98,7 +102,7 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 									alt={movie.title}
 									width={374}
 									height={542}
-									className="rounded-[4px] object-cover shadow-2xl"
+									className="rounded-[4px] object-cover"
 									unoptimized={proxiedPosterUrl.includes('/storage/proxy')}
 								/>
 							) : (
@@ -185,7 +189,7 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 												? new Date(movie.releaseDate).toLocaleDateString(
 														'pt-BR',
 														{ timeZone: 'UTC' },
-													)
+												  )
 												: '—'
 										}
 									/>
@@ -193,7 +197,9 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 										label="Duração"
 										value={
 											movie.runtime
-												? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`
+												? `${Math.floor(movie.runtime / 60)}h ${
+														movie.runtime % 60
+												  }m`
 												: '—'
 										}
 									/>
@@ -223,7 +229,7 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 			</Card>
 			{/* Trailer */}
 			<div className="mt-16 relative z-20">
-				<h2 className="text-2xl font-bold text-[--color-foreground] mb-6">
+				<h2 className="text-2xl font-bold text- dark:text-white mb-6">
 					Trailer
 				</h2>
 				{(() => {
@@ -260,7 +266,10 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 					onCancel={() => setIsEditSidebarOpen(false)}
 					onSuccess={() => {
 						setIsEditSidebarOpen(false)
-						window.location.reload()
+						// Revalidar a rota após fechar o sidebar
+						setTimeout(() => {
+							router.refresh()
+						}, 300) // Aguardar a animação de fechamento do sidebar
 					}}
 				/>
 			</Sidebar>

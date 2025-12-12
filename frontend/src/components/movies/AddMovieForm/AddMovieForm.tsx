@@ -22,6 +22,7 @@ import Image from 'next/image'
 import { uploadImageViaPresign } from '@/services/storage'
 import { createMovie } from '@/services/movies'
 import { showToast } from '@/lib/toast'
+import { revalidateMoviesList } from '@/app/(protected)/movies/actions'
 
 interface AddMovieFormProps {
 	onCancel: () => void
@@ -118,6 +119,9 @@ export function AddMovieForm({ onCancel, onSuccess }: AddMovieFormProps) {
 				message: 'Filme criado com sucesso!',
 				type: 'success',
 			})
+
+			// Revalidar a rota de listagem de filmes
+			await revalidateMoviesList()
 
 			onSuccess?.()
 			onCancel()

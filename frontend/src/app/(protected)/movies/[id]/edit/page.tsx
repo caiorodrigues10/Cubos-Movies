@@ -8,6 +8,7 @@ import { getMovieById, updateMovie } from "@/services/movies";
 import type { Movie } from "@/services/movies/types";
 import { updateMovieSchema, type UpdateMovieFormData } from "@/lib/schemas/movie";
 import { showToast } from "@/lib/toast";
+import { revalidateMoviesList } from "../../actions";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Label } from "@/components/ui/Label";
 import { Input, InputError } from "@/components/ui/Input";
@@ -99,6 +100,9 @@ export default function EditMoviePage({ params }: EditMoviePageProps) {
 				message: 'Filme atualizado com sucesso!',
 				type: 'success',
 			});
+
+			// Revalidar a rota de listagem de filmes
+			await revalidateMoviesList();
 
 			router.push(`/movies/${params.id}`);
 		} catch (err) {

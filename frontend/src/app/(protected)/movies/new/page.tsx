@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createMovie } from '@/services/movies'
 import { showToast } from '@/lib/toast'
+import { revalidateMoviesList } from '../actions'
 import {
 	createMovieSchema,
 	type CreateMovieFormData,
@@ -77,6 +78,9 @@ export default function NewMoviePage() {
 				message: 'Filme criado com sucesso!',
 				type: 'success',
 			})
+
+			// Revalidar a rota de listagem de filmes
+			await revalidateMoviesList()
 
 			router.push(`/movies/${movie.id}`)
 		} catch (err) {

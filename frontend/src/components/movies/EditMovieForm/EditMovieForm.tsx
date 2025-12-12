@@ -24,6 +24,7 @@ import { showToast } from '@/lib/toast'
 import Image from 'next/image'
 import type { Movie } from '@/services/movies/types'
 import { getProxiedImageUrl } from '@/lib/imageProxy'
+import { revalidateMoviesList } from '@/app/(protected)/movies/actions'
 
 interface EditMovieFormProps {
 	movie: Movie
@@ -152,6 +153,9 @@ export function EditMovieForm({
 				message: 'Filme atualizado com sucesso!',
 				type: 'success',
 			})
+
+			// Revalidar a rota de listagem de filmes
+			await revalidateMoviesList()
 
 			onSuccess?.()
 			onCancel()
