@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import type { Movie } from '@/services/movies/types'
 import { getYouTubeEmbedUrl } from '@/lib/utils'
@@ -13,28 +12,38 @@ import { Sidebar } from '@/components/ui/Sidebar'
 import { CircularRating } from '@/components/ui/CircularRating'
 import { EditMovieForm } from '../EditMovieForm/EditMovieForm'
 import { InfoItem } from './InfoItem'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { deleteMovie } from '@/services/movies'
+import { showToast } from '@/lib/toast'
 
 export function MovieDetailsClient({ movie }: { movie: Movie }) {
 	const router = useRouter()
 	const [isEditSidebarOpen, setIsEditSidebarOpen] = useState(false)
-	const { resolvedTheme } = useTheme()
-	const [mounted, setMounted] = useState(false)
+	const [isDeleting, setIsDeleting] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const proxiedPosterUrl = getProxiedImageUrl(movie.posterUrl)
 	const proxiedBackdropUrl = getProxiedImageUrl(movie.backdropUrl)
 	const profit =
 		movie.revenue && movie.budget ? movie.revenue - movie.budget : null
 
-	useEffect(() => {
-		const timer = requestAnimationFrame(() => {
-			setMounted(true)
-		})
-		return () => cancelAnimationFrame(timer)
-	}, [])
-
-	const isDark = mounted && resolvedTheme === 'dark'
-	const gradientStyle = isDark
-		? 'linear-gradient(90deg, #121113 0%, rgba(18, 17, 19, 0.8) 50%, rgba(18, 17, 19, 0) 100%)'
-		: 'linear-gradient(90deg, #faf9fb 0%, rgba(250, 249, 251, 0.8) 50%, rgba(250, 249, 251, 0) 100%)'
+	const handleDelete = async () => {
+		try {
+			setIsDeleting(true)
+			await deleteMovie(movie.id)
+			showToast({
+				message: 'Filme deletado com sucesso!',
+				type: 'success',
+			})
+			router.push('/movies')
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Erro ao deletar filme.'
+			showToast({ message, type: 'error' })
+		} finally {
+			setIsDeleting(false)
+			setIsDeleteDialogOpen(false)
+		}
+	}
 
 	const formatMoney = (value: number | null | undefined) => {
 		if (!value) return '—'
@@ -62,11 +71,11 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 						: undefined
 				}
 			>
-				{proxiedBackdropUrl && mounted && (
+				{proxiedBackdropUrl && (
 					<div
 						className="absolute inset-0 pointer-events-none"
 						style={{
-							background: gradientStyle,
+							background: 'var(--details-gradient)',
 						}}
 					/>
 				)}
@@ -83,7 +92,13 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 							)}
 						</div>
 						<div className="flex gap-4">
-							<Button variant="secondary">Deletar</Button>
+							<Button
+								variant="secondary"
+								onClick={() => setIsDeleteDialogOpen(true)}
+								disabled={isDeleting}
+							>
+								{isDeleting ? 'Deletando...' : 'Deletar'}
+							</Button>
 							<Button
 								onClick={() => setIsEditSidebarOpen(true)}
 								className="bg-[--color-primary] hover:bg-[--color-primary-hover] text-[--color-primary-foreground] border-none"
@@ -273,6 +288,19 @@ export function MovieDetailsClient({ movie }: { movie: Movie }) {
 					}}
 				/>
 			</Sidebar>
+
+			<ConfirmDialog
+				isOpen={isDeleteDialogOpen}
+				onClose={() => {
+					if (!isDeleting) setIsDeleteDialogOpen(false)
+				}}
+				onConfirm={handleDelete}
+				title="Deletar filme"
+				description="Esta ação não pode ser desfeita. Deseja remover o filme?"
+				cancelText="Cancelar"
+				confirmText="Deletar"
+				isConfirmLoading={isDeleting}
+			/>
 		</div>
 	)
 }
